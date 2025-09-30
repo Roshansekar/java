@@ -1,0 +1,384 @@
+//1. Customer.java
+package insurance;
+
+public class Customer {
+    private int customerId;
+    private String name;
+    private String contact;
+    
+    public Customer(int customerId, String name, String contact) {
+        this.customerId = customerId;
+        this.name = name;
+        this.contact = contact;
+    }
+
+    public int getCustomerId() {
+        return customerId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer ID: " + customerId + ", Name: " + name + ", Contact: " + contact;
+    }
+}
+
+//2. Policy.java
+package insurance;
+
+public class Policy {
+    private int policyId;
+    private String type;
+    private Customer customer;
+    private boolean active;
+    
+    public Policy(int policyId, String type, Customer customer) {
+        this.policyId = policyId;
+        this.type = type;
+        this.customer = customer;
+        this.active = true;
+    }
+
+    public int getPolicyId() {
+        return policyId;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void deactivatePolicy() {
+        active = false;
+    }
+
+    @Override
+    public String toString() {
+        return "Policy ID: " + policyId + ", Type: " + type + ", Customer: " + customer.getName() + ", Active: " + active;
+    }
+}
+
+//3. PremiumPayment.java
+package insurance;
+
+public class PremiumPayment {
+    private Policy policy;
+    private double amount;
+    private boolean paid;
+    
+    public PremiumPayment(Policy policy, double amount) {
+        this.policy = policy;
+        this.amount = amount;
+        this.paid = false;
+    }
+
+    public void pay() {
+        paid = true;
+        System.out.println("Premium of " + amount + " paid for Policy ID: " + policy.getPolicyId());
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public Policy getPolicy() {
+        return policy;
+    }
+}
+
+//4. Claim.java
+package insurance;
+
+public class Claim {
+    private int claimId;
+    private Policy policy;
+    private Customer customer;
+    private String description;
+    private String status; 
+    private String reason;
+
+    public Claim(int claimId, Policy policy, Customer customer, String description) {
+        this.claimId = claimId;
+        this.policy = policy;
+        this.customer = customer;
+        this.description = description;
+        this.status = "Filed";
+    }
+
+    public int getClaimId() {
+        return claimId;
+    }
+
+    public Policy getPolicy() {
+        return policy;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    @Override
+    public String toString() {
+        return "Claim ID: " + claimId + ", Policy ID: " + policy.getPolicyId() + ", Customer: " + customer.getName() +
+                ", Status: " + status + (reason != null ? ", Reason: " + reason : "");
+    }
+}
+
+//5. ClaimAssessment.java
+package insurance;
+
+public class ClaimAssessment {
+    private Claim claim;
+    
+    public ClaimAssessment(Claim claim) {
+        this.claim = claim;
+    }
+
+    public void assess() {
+        if (!claim.getPolicy().isActive()) {
+            claim.setStatus("Rejected");
+            claim.setReason("Policy inactive");
+        } else {
+            claim.setStatus("Assessed");
+            System.out.println("Claim assessed successfully for Claim ID: " + claim.getClaimId());
+        }
+    }
+}
+
+//6. ClaimDecision.java
+package insurance;
+
+public class ClaimDecision {
+    private Claim claim;
+
+    public ClaimDecision(Claim claim) {
+        this.claim = claim;
+    }
+
+    public void decide(boolean approve) {
+        if (!claim.getStatus().equals("Assessed")) {
+            System.out.println("Claim must be assessed first.");
+            return;
+        }
+
+        if (approve) {
+            claim.setStatus("Approved");
+            System.out.println("Claim approved for Claim ID: " + claim.getClaimId());
+        } else {
+            claim.setStatus("Rejected");
+            claim.setReason("Assessment failed");
+            System.out.println("Claim rejected for Claim ID: " + claim.getClaimId());
+        }
+    }
+}
+
+//7. Payout.java
+package insurance;
+
+public class Payout {
+    private Claim claim;
+    private double amount;
+
+    public Payout(Claim claim, double amount) {
+        this.claim = claim;
+        this.amount = amount;
+    }
+
+    public void process() {
+        if (claim.getStatus().equals("Approved")) {
+            System.out.println("Payout of " + amount + " processed for Claim ID: " + claim.getClaimId());
+        } else {
+            System.out.println("Payout cannot be processed. Claim status: " + claim.getStatus());
+        }
+    }
+}
+
+//8. InsuranceManagementSystem.java (Main Class)
+package insurance;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class InsuranceManagementSystem {
+    static Scanner sc = new Scanner(System.in);
+    static ArrayList<Customer> customers = new ArrayList<>();
+    static ArrayList<Policy> policies = new ArrayList<>();
+    static ArrayList<PremiumPayment> premiums = new ArrayList<>();
+    static ArrayList<Claim> claims = new ArrayList<>();
+
+    public static void main(String[] args) {
+        int choice = 0;
+        do {
+            System.out.println("\n---- Insurance Management System ----");
+            System.out.println("1. Add Customer");
+            System.out.println("2. Create Policy");
+            System.out.println("3. Record Premium");
+            System.out.println("4. File Claim");
+            System.out.println("5. Assess Claim");
+            System.out.println("6. Decide Claim");
+            System.out.println("7. Process Payout");
+            System.out.println("8. Exit");
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+            sc.nextLine(); 
+
+            switch (choice) {
+                case 1: addCustomer(); break;
+                case 2: createPolicy(); break;
+                case 3: recordPremium(); break;
+                case 4: fileClaim(); break;
+                case 5: assessClaim(); break;
+                case 6: decideClaim(); break;
+                case 7: processPayout(); break;
+                case 8: System.out.println("Exiting..."); break;
+                default: System.out.println("Invalid choice. Try again.");
+            }
+        } while (choice != 8);
+    }
+
+    private static void addCustomer() {
+        System.out.print("Enter Customer ID: ");
+        int id = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Contact: ");
+        String contact = sc.nextLine();
+        customers.add(new Customer(id, name, contact));
+        System.out.println("Customer added successfully!");
+    }
+
+    private static void createPolicy() {
+        System.out.print("Enter Policy ID: ");
+        int pid = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Enter Policy Type: ");
+        String type = sc.nextLine();
+        System.out.print("Enter Customer ID for this policy: ");
+        int cid = sc.nextInt();
+        Customer cust = findCustomerById(cid);
+        if (cust != null) {
+            policies.add(new Policy(pid, type, cust));
+            System.out.println("Policy created successfully!");
+        } else {
+            System.out.println("Customer not found!");
+        }
+    }
+
+    private static void recordPremium() {
+        System.out.print("Enter Policy ID: ");
+        int pid = sc.nextInt();
+        Policy pol = findPolicyById(pid);
+        if (pol != null) {
+            System.out.print("Enter Premium Amount: ");
+            double amt = sc.nextDouble();
+            PremiumPayment premium = new PremiumPayment(pol, amt);
+            premium.pay();
+            premiums.add(premium);
+        } else {
+            System.out.println("Policy not found!");
+        }
+    }
+
+    private static void fileClaim() {
+        System.out.print("Enter Claim ID: ");
+        int cid = sc.nextInt();
+        System.out.print("Enter Policy ID: ");
+        int pid = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Enter Claim Description: ");
+        String desc = sc.nextLine();
+
+        Policy pol = findPolicyById(pid);
+        if (pol != null) {
+            claims.add(new Claim(cid, pol, pol.getCustomer(), desc));
+            System.out.println("Claim filed successfully!");
+        } else {
+            System.out.println("Policy not found!");
+        }
+    }
+
+    private static void assessClaim() {
+        System.out.print("Enter Claim ID to assess: ");
+        int cid = sc.nextInt();
+        Claim cl = findClaimById(cid);
+        if (cl != null) {
+            new ClaimAssessment(cl).assess();
+        } else {
+            System.out.println("Claim not found!");
+        }
+    }
+
+    private static void decideClaim() {
+        System.out.print("Enter Claim ID to decide: ");
+        int cid = sc.nextInt();
+        Claim cl = findClaimById(cid);
+        if (cl != null) {
+            System.out.print("Approve claim? (true/false): ");
+            boolean approve = sc.nextBoolean();
+            new ClaimDecision(cl).decide(approve);
+        } else {
+            System.out.println("Claim not found!");
+        }
+    }
+
+    private static void processPayout() {
+        System.out.print("Enter Claim ID for payout: ");
+        int cid = sc.nextInt();
+        Claim cl = findClaimById(cid);
+        if (cl != null) {
+            System.out.print("Enter Payout Amount: ");
+            double amt = sc.nextDouble();
+            new Payout(cl, amt).process();
+        } else {
+            System.out.println("Claim not found!");
+        }
+    }
+
+    private static Customer findCustomerById(int id) {
+        for (Customer c : customers) {
+            if (c.getCustomerId() == id) return c;
+        }
+        return null;
+    }
+
+    private static Policy findPolicyById(int id) {
+        for (Policy p : policies) {
+            if (p.getPolicyId() == id) return p;
+        }
+        return null;
+    }
+
+    private static Claim findClaimById(int id) {
+        for (Claim c : claims) {
+            if (c.getClaimId() == id) return c;
+        }
+        return null;
+    }
+}
